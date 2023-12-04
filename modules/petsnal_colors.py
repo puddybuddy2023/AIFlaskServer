@@ -17,6 +17,8 @@ import json
 import base64
 from urllib.parse import urlparse
 import posixpath
+import io
+from requests_toolbelt.multipart.encoder import MultipartEncoder
 
 
 def get_file_extension(url):
@@ -55,7 +57,7 @@ def process_image_from_url(image_url):
         return None
 
 
-def petsnal_process_with_img(image):
+def virtual_fit_process_with_img(image, insert_image):
     # This is needed since the notebook is stored in the object_detection folder.
     sys.path.append("...")
 
@@ -114,6 +116,7 @@ def petsnal_process_with_img(image):
     # Number of objects detected
     num_detections = detection_graph.get_tensor_by_name('num_detections:0')
 
+    image = np.array(image)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
     # 이미지의 높이와 너비 가져오기
@@ -173,21 +176,9 @@ def petsnal_process_with_img(image):
 
     _image = np.copy(imageNP)
 
-    # 이미지 파일 불러오기 수정!!
-    image_path = "NY.png"  # 삽입할 이미지 파일 경로
-    insert_image = Image.open(image_path)
-
     # 이미지 회전 및 변환
     insert_image = insert_image.rotate(angle, resample=Image.BICUBIC)  # 회전
     insert_image = insert_image.resize((int(_width), int(_height)), resample=Image.BICUBIC)  # 크기 조절
-
-    # 흐릿하게 만들 부분의 너비
-    blur_width = int(width * 0.2)  # 예시: 전체 너비의 20%를 흐릿하게 만듦
-
-    # 이미지 흐릿하게 처리
-    blurred_image = insert_image.copy()
-    blurred_image[:, -blur_width:] = cv2.blur(blurred_image[:, -blur_width:], (50, 50))  # 블러 처리
-
 
     # Pillow(PIL) 이미지로 변환
     pillow_image = Image.fromarray(_image)
@@ -200,12 +191,36 @@ def petsnal_process_with_img(image):
     # 다시 numpy 배열로 변환
     _image = np.array(pillow_image)
 
-    url = upload_to_s3(Image.fromarray(_image))
-    return url
+    code, json_data = upload_to_s3(Image.fromarray(_image))
+    return json_data['uploadImg']
 
 
     # 합성된 이미지 표시 혹은 저장
     # Image.fromarray(_image).show()  # 이미지 표시
+
+def petsnal_color(image, preferId):
+    # 폴더 내의 모든 파일에 대해 반복하여 작업 수행
+    folder_path = './assets/petsnals'  # 작업할 폴더 경로
+    img_urls = []
+    for filename in sorted(os.listdir(folder_path)):
+        if filename.endswith('.png'):
+            file_path = os.path.join(folder_path, filename)  # 파일 경로 생성
+
+            # 이미지 파일 열기
+            insert_image = Image.open(file_path)
+
+            # 가상 fit 처리 함수 실행
+            img_urls.append(virtual_fit_process_with_img(image, insert_image))
+
+    save_petsnal_test(preferId, img_urls)
+    return True
+
+
+def save_petsnal_test(preferId, img_urls):
+    for url in img_urls:
+        pass
+    # post 요청
+    return True
 
 
 
@@ -240,20 +255,20 @@ def calculate_size(box1, box2):
     return width*400*0.9, height*400*1.2
 
 def upload_to_s3(pil_image):
-    # 이미지를 BytesIO로 변환하여 파일 형태로 생성
-    image_file = io.BytesIO()
-    pil_image.save(image_file, format='JPEG')  # 원하는 포맷으로 저장할 수 있습니다.
+    image_bytes = io.BytesIO()
+    pil_image.save(image_bytes, format='JPEG')  # 필요한 포맷으로 저장 (JPEG, PNG 등)
 
-    # 파일 객체의 포인터를 처음으로 되돌림
-    image_file.seek(0)
+    # BytesIO의 포인터를 처음으로 되돌림
+    image_bytes.seek(0)
 
-    # 멀티파트 요청을 위한 파일 형태로 변환
-    files = {'file': ('image.jpg', image_file, 'image/jpeg')}  # 파일 이름 및 MIME 타입 지정
+    # 업로드할 이미지 데이터 설정
+    field= {'file': ('image.jpg', image_bytes, 'image/jpeg')}
 
-    # Flask 서버의 엔드포인트 URL
-    url = 'http://ec2-13-124-164-167.ap-northeast-2.compute.amazonaws.com/uploadNewImg'
+    return post('http://ec2-13-124-164-167.ap-northeast-2.compute.amazonaws.com/uploadNewImg', field)
+   
 
-    # 멀티파트 요청으로 이미지 파일을 서버에 전송
-    response = requests.post(url, files=files)
-
-    print(response.text)  # 서버로부터의 응답 출력
+def post(url, field_data) :
+    m = MultipartEncoder(fields=field_data)
+    headers = {'Content-Type' : m.content_type}
+    res = requests.post(url, headers=headers, data=m)
+    return res.status_code, res.json()
