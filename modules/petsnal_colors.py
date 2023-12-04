@@ -15,12 +15,38 @@ from PIL import Image, ImageFilter
 import requests
 import json
 import base64
+from urllib.parse import urlparse
+import posixpath
+
+
+def get_file_extension(url):
+    """URL에서 파일 확장자를 추출하는 함수"""
+    parsed = urlparse(url)
+    root, ext = posixpath.splitext(parsed.path)
+    print(ext)
+    return ext
 
 def process_image_from_url(image_url):
     try:
         response = requests.get(image_url)
         if response.status_code == 200:
             image = Image.open(BytesIO(response.content))
+
+            # 이미지가 RGBA 모드인 경우 RGB로 변환
+            if image.mode == 'RGBA':
+                image = image.convert('RGB')
+
+            # URL에서 파일 확장자 추출
+            file_extension = get_file_extension(image_url)
+
+            # 이미지를 저장할 디렉토리 경로 설정
+            directory = 'assets/temp'
+            if not os.path.exists(directory):
+                os.makedirs(directory)
+            
+            # 이미지를 특정 경로에 저장 (파일명은 URL에서 추출한 확장자로 설정)
+            image.save(os.path.join(directory, f'image{file_extension}'))
+            print("Image saved successfully!")
             return image
         else:
             return None
