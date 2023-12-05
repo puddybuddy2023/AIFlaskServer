@@ -35,7 +35,7 @@ def process_image_from_url(image_url):
             image = Image.open(BytesIO(response.content))
 
             # 이미지가 RGBA 모드인 경우 RGB로 변환
-            if image.mode == 'RGBA':
+            if image.mode != 'RGB':
                 image = image.convert('RGB')
 
             # URL에서 파일 확장자 추출
@@ -178,13 +178,15 @@ def virtual_fit_process_with_img(image, insert_image_list):
 
     for insert_image in insert_image_list:
         _image = np.copy(imageNP)
-        # 이미지 회전 및 변환
+        
         insert_image = insert_image.rotate(angle, resample=Image.BICUBIC)  # 회전
         insert_image = insert_image.resize((int(_width), int(_height)), resample=Image.BICUBIC)  # 크기 조절
-
         # Pillow(PIL) 이미지로 변환
         pillow_image = Image.fromarray(_image)
+        insert_image = insert_image.convert("RGBA")
 
+        print(pillow_image.mode)
+        print(insert_image.mode)
 
         # 이미지 합성
         pillow_image.paste(insert_image, point, mask=insert_image)
@@ -254,6 +256,7 @@ def save_petsnal_test(preferId, img_urls):
         print(response.text)
 
     # post 요청
+    
     return True
 
 
