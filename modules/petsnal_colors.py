@@ -57,7 +57,7 @@ def process_image_from_url(image_url):
         return None
 
 
-def virtual_fit_process_with_img(image, insert_image):
+def virtual_fit_process_with_img(image, insert_image_list):
     # This is needed since the notebook is stored in the object_detection folder.
     sys.path.append("...")
 
@@ -174,34 +174,36 @@ def virtual_fit_process_with_img(image, insert_image):
 
     # 이미지 크기는 항상 400 x 400
 
-    _image = np.copy(imageNP)
+    result_urls = []
 
-    # 이미지 회전 및 변환
-    insert_image = insert_image.rotate(angle, resample=Image.BICUBIC)  # 회전
-    insert_image = insert_image.resize((int(_width), int(_height)), resample=Image.BICUBIC)  # 크기 조절
+    for insert_image in insert_image_list:
+        _image = np.copy(imageNP)
+        # 이미지 회전 및 변환
+        insert_image = insert_image.rotate(angle, resample=Image.BICUBIC)  # 회전
+        insert_image = insert_image.resize((int(_width), int(_height)), resample=Image.BICUBIC)  # 크기 조절
 
-    # Pillow(PIL) 이미지로 변환
-    pillow_image = Image.fromarray(_image)
-
-
-    # 이미지 합성
-    pillow_image.paste(insert_image, point, mask=insert_image)
+        # Pillow(PIL) 이미지로 변환
+        pillow_image = Image.fromarray(_image)
 
 
-    # 다시 numpy 배열로 변환
-    _image = np.array(pillow_image)
-
-    code, json_data = upload_to_s3(Image.fromarray(_image))
-    return json_data['uploadImg']
+        # 이미지 합성
+        pillow_image.paste(insert_image, point, mask=insert_image)
 
 
-    # 합성된 이미지 표시 혹은 저장
-    # Image.fromarray(_image).show()  # 이미지 표시
+        # 다시 numpy 배열로 변환
+        _image = np.array(pillow_image)
+
+        code, json_data = upload_to_s3(Image.fromarray(_image))
+
+        result_urls.append(str(json_data['uploadImg']))
+
+    return result_urls
 
 def petsnal_color(image, preferId):
     # 폴더 내의 모든 파일에 대해 반복하여 작업 수행
     folder_path = './assets/petsnals'  # 작업할 폴더 경로
     img_urls = []
+    insert_image_list = []
     for filename in sorted(os.listdir(folder_path)):
         if filename.endswith('.png'):
             file_path = os.path.join(folder_path, filename)  # 파일 경로 생성
@@ -209,16 +211,48 @@ def petsnal_color(image, preferId):
             # 이미지 파일 열기
             insert_image = Image.open(file_path)
 
-            # 가상 fit 처리 함수 실행
-            img_urls.append(virtual_fit_process_with_img(image, insert_image))
+            insert_image_list.append(insert_image)
 
+    img_urls = virtual_fit_process_with_img(image, insert_image_list)
     save_petsnal_test(preferId, img_urls)
     return True
 
+def fitting_img(image, fitting_image):
+    insert_image_list = []
+    insert_image_list.append(fitting_image)
+    img_url = virtual_fit_process_with_img(image, insert_image_list)
+    return img_url[0]
+    
+
 
 def save_petsnal_test(preferId, img_urls):
-    for url in img_urls:
-        pass
+    post_url = "http://ec2-13-124-164-167.ap-northeast-2.compute.amazonaws.com/saveTest/"+str(preferId)
+
+    data = {
+        "imgUrl" : img_urls
+    }
+
+    print(data)
+
+    # JSON 형태로 변환
+    payload = json.dumps(data)
+
+    # 헤더 설정
+    headers = {
+        'Content-Type': 'application/json'
+    }
+
+    # 요청 보내기
+    response = requests.post(post_url, headers=headers, data=payload)
+
+    # 응답 확인
+    if response.status_code == 200:
+        print("요청 성공!")
+        print(response.json())
+    else:
+        print("요청 실패 :(")
+        print(response.text)
+
     # post 요청
     return True
 

@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify
 from modules.petsnal_colors import *
 
 app = Flask(__name__)
@@ -11,8 +11,30 @@ def test():
 def process_image():
     image_url = request.args.get('image_url')  # 이미지 URL을 파라미터로 받기
     prefer_id = request.args.get('prefer_id')
+    print(image_url)
+    print(prefer_id)
+    image = process_image_from_url(image_url)
+    result = petsnal_color(image, prefer_id)
+    print(result)
 
     return "Image processing completed!"
+
+@app.route('/fitting', methods=['GET'])
+def process_fitting():
+    image_url = request.args.get('image_url')  # 이미지 URL을 파라미터로 받기
+    clothes_id = request.args.get('clothes_id')
+    image = process_image_from_url(image_url)
+    folder_path = '/assets/petsnals/'
+    path = folder_path+str(clothes_id)+".png"
+    file_path = os.path.join(path)
+    fitting_image = Image.open(file_path)
+
+    result = fitting_img(image, fitting_image)
+    data = {
+        'img_url' : result
+    }
+
+    return jsonify(data)
     
 
 if __name__ == '__main__':

@@ -26,5 +26,13 @@ def s3_upload_test():
     print(res)
     return "good"
 
+@app.route('/petsnal')
+def petsnal_test():
+    image = Image.open("assets/images/1.jpeg")
+    preferId = 2
+    res = petsnal_color(image, preferId)
+    return "good"
+
+
 if __name__ == '__main__':
     app.run(debug=True)
