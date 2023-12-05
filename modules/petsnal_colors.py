@@ -183,7 +183,7 @@ def virtual_fit_process_with_img(image, insert_image_list):
         insert_image = insert_image.resize((int(_width), int(_height)), resample=Image.BICUBIC)  # 크기 조절
         # Pillow(PIL) 이미지로 변환
         pillow_image = Image.fromarray(_image)
-        insert_image = insert_image.convert("RGBA")
+        # insert_image = insert_image.convert("RGBA")
 
         print(pillow_image.mode)
         print(insert_image.mode)
@@ -196,6 +196,7 @@ def virtual_fit_process_with_img(image, insert_image_list):
         _image = np.array(pillow_image)
 
         code, json_data = upload_to_s3(Image.fromarray(_image))
+        print(json_data)
 
         result_urls.append(str(json_data['uploadImg']))
 
