@@ -229,10 +229,10 @@ def fitting_img(image, fitting_image):
 
 
 def save_petsnal_test(preferId, img_urls):
-    post_url = "http://ec2-13-124-164-167.ap-northeast-2.compute.amazonaws.com/saveTest/"+str(preferId)
+    post_url = "http://ec2-13-124-164-167.ap-northeast-2.compute.amazonaws.com/petsnalColors/saveTest/"+str(preferId)
 
     data = {
-        "imgUrl" : img_urls
+        "imgUrls" : img_urls
     }
 
     print(data)
