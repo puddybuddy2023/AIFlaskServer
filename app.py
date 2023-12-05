@@ -24,17 +24,18 @@ def process_fitting():
     image_url = request.args.get('image_url')  # 이미지 URL을 파라미터로 받기
     clothes_id = request.args.get('clothes_id')
     image = process_image_from_url(image_url)
-    folder_path = '/assets/petsnals/'
-    path = folder_path+str(clothes_id)+".png"
-    file_path = os.path.join(path)
+    folder_path = 'assets/clothes'  # 경로를 'assets/clothes'로 수정
+    clothes = str(clothes_id) + ".png"
+    file_path = os.path.join(folder_path, clothes)
     fitting_image = Image.open(file_path)
 
     result = fitting_img(image, fitting_image)
     data = {
-        'img_url' : result
+        'img_url': result
     }
 
     return jsonify(data)
+
     
 
 if __name__ == '__main__':
