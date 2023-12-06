@@ -34,9 +34,9 @@ def process_image_from_url(image_url):
         if response.status_code == 200:
             image = Image.open(BytesIO(response.content))
 
-            # 이미지가 RGBA 모드인 경우 RGB로 변환
-            if image.mode != 'RGB':
-                image = image.convert('RGB')
+            # # 이미지가 RGBA 모드인 경우 RGB로 변환
+            # if image.mode != 'RGB':
+            #     image = image.convert('RGB')
 
             # URL에서 파일 확장자 추출
             file_extension = get_file_extension(image_url)
@@ -229,7 +229,7 @@ def fitting_img(image, fitting_image):
 
 
 def save_petsnal_test(preferId, img_urls):
-    post_url = "http://ec2-13-124-164-167.ap-northeast-2.compute.amazonaws.com/petsnalColors/saveTest/"+str(preferId)
+    post_url = "http://ec2-3-39-55-229.ap-northeast-2.compute.amazonaws.com/petsnalColors/saveTest/"+str(preferId)
 
     data = {
         "imgUrls" : img_urls
@@ -302,7 +302,7 @@ def upload_to_s3(pil_image):
     # 업로드할 이미지 데이터 설정
     field= {'file': ('image.jpg', image_bytes, 'image/jpeg')}
 
-    return post('http://ec2-13-124-164-167.ap-northeast-2.compute.amazonaws.com/uploadNewImg', field)
+    return post('http://ec2-3-39-55-229.ap-northeast-2.compute.amazonaws.com/uploadNewImg', field)
    
 
 def post(url, field_data) :

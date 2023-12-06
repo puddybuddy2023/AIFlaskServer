@@ -15,7 +15,7 @@ def url_image_test():
 @app.route('/virtual_fit')
 def virtual_fit_test():
     image = Image.open("assets/images/1.jpeg")
-    insert = Image.open("assets/clothes/mint.png")
+    insert = Image.open("assets/clothes/76.png")
     res = virtual_fit_process_with_img(image, insert)
     return res
 
