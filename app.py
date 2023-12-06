@@ -16,8 +16,11 @@ def process_image():
     image = process_image_from_url(image_url)
     result = petsnal_color(image, prefer_id)
     print(result)
+    data = {
+        'isSuceess' : result
+    }
 
-    return "Image processing completed!"
+    return jsonify(data)
 
 @app.route('/fitting', methods=['GET'])
 def process_fitting():
