@@ -15,8 +15,10 @@ def url_image_test():
 @app.route('/virtual_fit')
 def virtual_fit_test():
     image = Image.open("assets/images/1.jpeg")
+    insertlist = []
     insert = Image.open("assets/clothes/76.png")
-    res = virtual_fit_process_with_img(image, insert)
+    insertlist.append(insert)
+    res = virtual_fit_process_with_img(image, insertlist)
     return res
 
 @app.route('/s3_upload')

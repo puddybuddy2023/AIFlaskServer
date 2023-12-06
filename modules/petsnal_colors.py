@@ -6,8 +6,8 @@ import sys
 import matplotlib.pyplot as plt
 import requests
 from io import BytesIO
-from utils import label_map_util
-from utils import visualization_utils as vis_util
+from utils_package import label_map_util
+from utils_package import visualization_utils as vis_util
 import math
 from PIL import Image
 import numpy as np
@@ -117,7 +117,7 @@ def virtual_fit_process_with_img(image, insert_image_list):
     num_detections = detection_graph.get_tensor_by_name('num_detections:0')
 
     image = np.array(image)
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    # image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
     # 이미지의 높이와 너비 가져오기
     height, width = image.shape[:2]
