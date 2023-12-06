@@ -17,7 +17,7 @@ def process_image():
     result = petsnal_color(image, prefer_id)
     print(result)
     data = {
-        'isSuceess' : result
+        'isSuccess' : result
     }
 
     return jsonify(data)
